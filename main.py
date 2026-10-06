@@ -1,19 +1,26 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
+from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 
 app = FastAPI()
 
-MODEL_NAME = "mrm8488/bert-tiny-mnli"
+
+class PredictRequest(BaseModel):
+    text: str = ""
+    label: str = "Book appointment"
+
+# Public MNLI model. Class index 2 is entailment, which /predict reports as confidence.
+# The previous id, mrm8488/bert-tiny-mnli, is not on the Hugging Face Hub.
+MODEL_NAME = "valhalla/distilbart-mnli-12-1"
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
 
 @app.post("/predict")
-async def predict(request: Request):
-    data = await request.json()
-    text = data.get("text", "")
-    label = data.get("label", "Book appointment")
+async def predict(body: PredictRequest):
+    text = body.text
+    label = body.label
 
     inputs = tokenizer(text, label, return_tensors="pt", truncation=True, padding=True)
     outputs = model(**inputs)

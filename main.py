@@ -4,7 +4,9 @@ import torch
 
 app = FastAPI()
 
-MODEL_NAME = "mrm8488/bert-tiny-mnli"
+# Public MNLI model. Class index 2 is entailment, which /predict reports as confidence.
+# The previous id, mrm8488/bert-tiny-mnli, is not on the Hugging Face Hub.
+MODEL_NAME = "valhalla/distilbart-mnli-12-1"
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
